@@ -1,0 +1,20 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t superteralex/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true superteralex/react-test npm test
+
+after_success:
+  - docker build -t superteralex/multi-client ./client
+  - docker build -t superteralex/multi-nginx ./nginx
+  - docker build -t superteralex/multi-server ./server
+  - docker build -t superteralex/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push superteralex/multi-client
+  - docker push superteralex/multi-nginx
+  - docker push superteralex/multi-server
+  - docker push superteralex/multi-worker
